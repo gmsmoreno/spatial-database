@@ -1,0 +1,547 @@
+-- IMPLEMENTAÇÃO FÍSICA (PostgreSQL)
+-- CONSISTÊNCIA DOS DADOS DE ENTRADA
+
+-- TABELA tra_pista_ponto_pouso_l
+DROP TABLE IF EXISTS tra_pista_pouso_l_tmp;
+
+CREATE TABLE tra_pista_pouso_l_tmp AS
+SELECT *
+FROM tra_pista_ponto_pouso_l;
+
+-- TABELA tra_pista_ponto_pouso_p
+DROP TABLE IF EXISTS tra_pista_pouso_p_tmp;
+
+CREATE TABLE tra_pista_pouso_p_tmp AS
+SELECT *
+FROM tra_pista_ponto_pouso_p;
+
+-- ATUALIZAR CAMPOS DA TABELA tra_pista_pouso_p_tmp
+SELECT nomeabrev FROM tra_pista_pouso_p_tmp
+WHERE nomeabrev = 'Fazenda Baía da Bugra';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Fazenda Baía da Bugra'
+WHERE nomeabrev = 'Fazenda Baia da Bugra';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Aero Agrícola Fulanete'
+WHERE nomeabrev = 'Aero Agricola Fulanete';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Fazenda Água Limpa'
+WHERE nomeabrev = 'Fazenda Agua Limpa';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Fazenda Água Fria'
+WHERE nomeabrev = 'Fazenda Agua Fria';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Fazenda Santa Terezinha'
+WHERE nomeabrev = 'Fazenda Santa terezinha';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Fazenda Santo Antônio'
+WHERE nomeabrev = 'Fazenda Santo Antonio';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'HELPN Companhia Siderúrgica Nacional'
+WHERE nomeabrev = 'HELPN Companhia Sideúrgica Nacional';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Marrecão'
+WHERE nomeabrev = 'Marrecao';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Senador Antônio Farias'
+WHERE nomeabrev = 'Senador Antonio Farias';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Sítio Serra Negra'
+WHERE nomeabrev = 'Sitio Serra Negra';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Faz. Fênix'
+WHERE nomeabrev = 'Faz. Fenix';
+
+UPDATE tra_pista_pouso_p_tmp
+SET nomeabrev = 'Faz. Centro de Voo à Vela Ipuã'
+WHERE nomeabrev = 'Faz. Centro de vôo a Vela Ipuã';
+
+-- ATUALIZAR CAMPOS DA TABELA tra_pista_pouso_l_tmp
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Pista de Pouso Porto Seguro II'
+WHERE nomeabrev = 'Pista de Pouso Porto Seguro II (Pedro Ca';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Palmeira das Missões'
+WHERE nomeabrev = 'Palmeira das Missoes';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Hercílio Luz'
+WHERE nomeabrev = 'Hercilio Luz';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Olhos D''Água'
+WHERE nomeabrev = 'Fazenda Olhos D''Agua';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Olhos D''Água'
+WHERE nomeabrev = 'Fazenda Olho D''Água';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Olhos D''Água'
+WHERE nomeabrev = 'Fazenda Olho D`água';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Irmãos Munaretto'
+WHERE nomeabrev = 'Fazenda Irmaos Munaretto';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Irmãos Munaretto'
+WHERE nomeabrev = 'Fazenda Irmaos Munaretto';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = null
+WHERE nomeabrev = 'desconhecido';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = null
+WHERE nomeabrev = 'Desconhecido';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Alta Floresta / Faz. Santa Amália'
+WHERE nomeabrev = 'Alta Floresta / Faz. Santa Amalia';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'UHE Peixe Angical'
+WHERE nomeabrev = 'Ahe Peixe Angical';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Estrela D''Alva'
+WHERE nomeabrev = 'Fazenda Estrela Dalva';
+
+UPDATE tra_pista_pouso_l_tmp
+SET nomeabrev = 'Fazenda Estrela D''Alva'
+WHERE nomeabrev = 'Fazenda Estrela D''alva';
+
+-- CRIAÇÃO DA TABELA
+-- TABELA pista_pouso
+DROP TABLE IF EXISTS pista_pouso;
+
+CREATE TABLE pista_pouso
+(
+pip_gid_pk integer,
+pip_id_objeto bigint,
+pip_pipo_pk integer,
+pip_pipl_pk integer,
+pip_uso varchar(15),
+pip_lar numeric(19),
+pip_ext numeric(20),
+pip_tip varchar(14),
+pip_rev varchar(28),
+pip_sit varchar(12),
+pip_geo varchar(5)
+);
+
+-- CHAVE-PRIMÁRIA 
+ALTER TABLE ONLY pista_pouso
+	DROP CONSTRAINT IF EXISTS pip_pkey;
+	
+ALTER TABLE ONLY pista_pouso
+	ADD CONSTRAINT pip_pkey PRIMARY KEY(pip_gid_pk);
+	
+-- SEQUÊNCIA
+DROP SEQUENCE IF EXISTS pip_pk_seq;
+
+CREATE SEQUENCE pip_pk_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MINVALUE
+	NO MAXVALUE
+	CACHE 1;
+	
+ALTER SEQUENCE pip_pk_seq OWNED BY pista_pouso.pip_gid_pk;
+
+ALTER TABLE pista_pouso ALTER COLUMN pip_gid_pk SET DEFAULT nextval('pip_pk_seq'::regclass);
+
+-- SEQUÊNCIA pip_id_objeto
+DROP SEQUENCE IF EXISTS pip_id_objeto_seq;
+
+CREATE SEQUENCE pip_id_objeto_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MINVALUE
+	NO MAXVALUE
+	CACHE 1;
+
+ALTER SEQUENCE pip_id_objeto_seq OWNED BY pista_pouso.pip_id_objeto;
+
+ALTER TABLE pista_pouso ALTER COLUMN pip_id_objeto SET DEFAULT nextval('pip_id_objeto_seq'::regclass);
+
+-- TABELA pista_pouso_p
+DROP TABLE IF EXISTS pista_pouso_p;
+
+CREATE TABLE pista_pouso_p
+(
+pipo_pk integer,
+pipo_nm varchar(50),
+pipo_gm geometry(MULTIPOINT, 4674)
+);
+
+-- CHAVE-PRIMÁRIA
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS pipo_pkey;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT pipo_pkey PRIMARY KEY(pipo_pk);
+	
+-- SEQUÊNCIA 
+DROP SEQUENCE IF EXISTS pipo_pk_seq;
+
+CREATE SEQUENCE pipo_pk_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MINVALUE
+	NO MAXVALUE
+	CACHE 1;
+	
+ALTER TABLE pista_pouso_p ALTER COLUMN pipo_pk SET DEFAULT nextval('pipo_pk_seq'::regclass);
+	
+-- TABELA pista_pouso_l
+DROP TABLE IF EXISTS pista_pouso_l;
+
+CREATE TABLE pista_pouso_l
+(
+pipl_pk integer,
+pipl_nm varchar(50),
+pipl_gm geometry(MULTILINESTRING, 4674)
+);
+
+-- CHAVE-PRIMÁRIA
+ALTER TABLE ONLY pista_pouso_l
+	DROP CONSTRAINT IF EXISTS pipl_pkey;
+
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT pipl_pkey PRIMARY KEY(pipl_pk);
+	
+-- SEQUÊNCIA
+DROP SEQUENCE IF EXISTS pipl_pk_seq;
+
+CREATE SEQUENCE pipl_pk_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MINVALUE
+	NO MAXVALUE
+	CACHE 1;
+	
+ALTER TABLE pista_pouso_l ALTER COLUMN pipl_pk SET DEFAULT nextval('pipl_pk_seq'::regclass);
+
+-- INSERÇÃO DOS DADOS
+-- TABELA pista_pouso
+INSERT INTO pista_pouso
+(
+pip_id_objeto,
+--pip_pipo_pk,
+--pip_pipl_pk,
+pip_uso,
+pip_lar,
+pip_ext,
+pip_tip,
+pip_rev,
+pip_sit,
+pip_geo
+)
+SELECT id_objeto, usopista, largura, extensao, tipopista, revestimen, situacaofi, CASE WHEN geometriaa = 'Sim' THEN True ELSE False END AS pip_geo
+FROM tra_pista_ponto_pouso_l
+UNION ALL
+SELECT id_objeto, usopista, largura, extensao, tipopista, revestimen, situacaofi, CASE WHEN geometriaa = 'Sim' THEN True ELSE False END AS pip_geo
+FROM tra_pista_ponto_pouso_p
+ORDER BY id_objeto;
+
+
+	
+-- TABELA pista_pouso_p
+INSERT INTO pista_pouso_p
+(
+pipo_pk,
+pipo_nm,
+pipo_gm
+)
+SELECT id_objeto::integer, nomeabrev, geom
+FROM tra_pista_ponto_pouso_p;
+
+-- TABELA pista_pouso_l
+INSERT INTO pista_pouso_l
+(
+pipl_pk,
+pipl_nm,
+pipl_gm
+)
+SELECT id_objeto::integer, nomeabrev, geom
+FROM tra_pista_ponto_pouso_l;
+
+-- ATUALIZAR CHAVES ESTRANGEIRAS
+-- TABELA pista_pouso
+-- ATRIBUTO pista_pouso.pipo_pk
+UPDATE pista_pouso
+SET pip_pipo_pk = pip_id_objeto
+FROM pista_pouso_p
+WHERE pista_pouso.pip_id_objeto = pista_pouso_p.pipo_pk;
+
+-- ATRIBUTO pista_pouso.pipl_pk
+UPDATE pista_pouso
+SET pip_pipl_pk = pip_id_objeto
+FROM pista_pouso_l
+WHERE pista_pouso.pip_id_objeto = pista_pouso_l.pipl_pk;
+
+-- INDEXAÇÃO NÃO ESPACIAL
+-- TABELA pista_pouso
+DROP INDEX IF EXISTS pip_gid_pk_idx;
+
+CREATE INDEX pip_gid_pk_idx ON pista_pouso(pip_gid_pk);
+
+DROP INDEX IF EXISTS pip_id_objeto_idx;
+
+CREATE INDEX pip_id_objeto_idx ON pista_pouso(pip_id_objeto);
+
+-- TABELA pista_pouso_p
+DROP INDEX IF EXISTS pipo_pk_idx;
+
+CREATE INDEX pipo_pk_idx ON pista_pouso_p(pipo_pk);
+
+DROP INDEX IF EXISTS pipo_nm_idx;
+
+CREATE INDEX pipo_nm_idx ON pista_pouso_p(pipo_nm);
+
+-- TABELA pista_pouso_l
+DROP INDEX IF EXISTS pipl_pk_idx;
+
+CREATE INDEX pipl_pk_idx ON pista_pouso_l(pipl_pk);
+
+DROP INDEX IF EXISTS pipl_nm_idx;
+
+CREATE INDEX pipl_nm_idx ON pista_pouso_l(pipl_nm);
+
+-- INDEXAÇÃO ESPACIAL
+-- TABELA pista_pouso_p
+DROP INDEX IF EXISTS pista_pouso_p_gm_idx;
+
+CREATE INDEX pista_pouso_p_gm_idx ON pista_pouso_p USING GIST(pipo_gm);
+
+-- TABELA pista_pouso_l
+DROP INDEX IF EXISTS pista_pouso_l_gm_idx;
+
+CREATE INDEX pista_pouso_l_gm_idx ON pista_pouso_l USING GIST(pipl_gm);
+
+-- CRIAÇÃO DAS RESTRIÇÕES DE INTEGRIDADE
+-- CHAVE-ESTRANGEIRA
+--TABELA pista_pouso
+ALTER TABLE ONLY pista_pouso
+	DROP CONSTRAINT IF EXISTS pip_pipo_pk_fkey;
+	
+ALTER TABLE ONLY pista_pouso
+	ADD CONSTRAINT pip_pipo_pk_fkey FOREIGN KEY(pip_pipo_pk)
+REFERENCES pista_pouso_p(pipo_pk);
+
+ALTER TABLE ONLY pista_pouso
+	DROP CONSTRAINT IF EXISTS pip_pipl_pk_fkey;
+
+ALTER TABLE ONLY pista_pouso
+	ADD CONSTRAINT pip_pipl_pk_fkey FOREIGN KEY(pip_pipl_pk)
+REFERENCES pista_pouso_l(pipl_pk);
+
+-- UNICIDADE
+-- TABELA pista_pouso_p
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS pipo_pk_unique;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT pipo_pk_unique UNIQUE (pipo_pk);
+
+-- TABELA pista_pouso_l
+ALTER TABLE ONLY pista_pouso_l
+	DROP CONSTRAINT IF EXISTS pipl_pk_unique;
+	
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT pipl_pk_unique UNIQUE (pipl_pk);
+	
+-- NÃO NULIDADE
+-- TABELA pista_pouso
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_id_objeto DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_id_objeto SET NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_uso DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_uso SET NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_uso DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_uso SET NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_tip DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_tip SET NOT NULL;
+
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_geo DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_geo SET NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_rev DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_rev SET NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_sit DROP NOT NULL;
+	
+ALTER TABLE pista_pouso
+	ALTER COLUMN pip_sit SET NOT NULL;
+
+-- RESTRIÇÕES DE INTEGRIDADE GEOMÉTRICA
+-- TABELA pista_pouso_p
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_GeoType_pipo_gm;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_GeoType_pipo_gm 
+	CHECK (GeometryType(pipo_gm) = 'MULTIPOINT'::text OR pipo_gm IS NULL);
+	
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_DIMS_pipo_gm;
+
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_DIMS_pipo_gm
+	CHECK (ST_NDIMS(pipo_gm) = 2);
+	
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_Dimension_pipo_gm;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_Dimension_pipo_gm
+	CHECK (ST_Dimension(pipo_gm) = 0);
+	
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_SRID_pipo_gm;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_SRID_pipo_gm
+	CHECK (ST_SRID(pipo_gm) = 4674);
+
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_IsSimple_pipo_gm;
+	
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_IsSimple_pipo_gm
+	CHECK (ST_IsSimple(pipo_gm) = true);
+	
+ALTER TABLE ONLY pista_pouso_p
+	DROP CONSTRAINT IF EXISTS enforce_IsValid_pipo_gm;
+
+ALTER TABLE ONLY pista_pouso_p
+	ADD CONSTRAINT enforce_IsValid_pipo_gm
+	CHECK (ST_IsValid(pipo_gm) = true);
+	
+-- TABELA pista_pouso_l
+ALTER TABLE ONLY pista_pouso_l
+	DROP IF EXISTS enforce_GeoType_pipl_gm;
+
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT enforce_GeoType_pipl_gm
+	CHECK (GeometryType(pipl_gm) = 'MULTILINESTRING'::text OR pipl_gm IS NULL);
+	
+ALTER TABLE ONLY pista_pouso_l
+	DROP IF EXISTS enforce_DIMS_pipl_gm;
+	
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT enforce_DIMS_pipl_gm
+	CHECK (ST_NDIMS(pipl_gm) = 2);
+	
+ALTER TABLE ONLY pista_pouso_l
+	DROP IF EXISTS enforce_Dimension_pipl_gm;
+	
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT enforce_Dimension_pipl_gm
+	CHECK (ST_Dimension(pipl_gm) = 1);
+	
+ALTER TABLE ONLY pista_pouso_l
+	DROP CONSTRAINT IF EXISTS enforce_SRID_pipl_gm;
+
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT enforce_SRID_pipl_gm 
+	CHECK (ST_SRID(pipl_gm) = 4674);
+	
+ALTER TABLE pista_pouso_l
+	DROP CONSTRAINT IF EXISTS enforce_IsSimple_pipl_gm;
+	
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT pista_IsSimple_pipl_gm
+	CHECK (ST_IsSimple(pipl_gm) = true);
+	
+ALTER TABLE ONLY pista_pouso_l
+	DROP CONSTRAINT IF EXISTS enforce_IsValid_pipl_gm;
+	
+ALTER TABLE ONLY pista_pouso_l
+	ADD CONSTRAINT enforce_IsValid_pipl_gm
+	CHECK (ST_IsValid(pipl_gm) = true);
+	
+
+-- AJUSTE FINAL
+-- TABELA pista_pouso
+SELECT setval(('pip_pk_seq'::text)::regclass, a.nextval, false)
+FROM
+(
+SELECT max(pip_gid_pk) + 1 AS nextval
+FROM pista_pouso
+) AS a;
+
+SELECT setval(('pip_id_objeto_seq'::text)::regclass, a.nextval, false)
+FROM
+(
+SELECT max(pip_id_objeto) + 1 AS nextval
+FROM pista_pouso
+) AS a;
+
+-- TABELA pista_pouso_p
+SELECT setval(('pipo_pk_seq'::text)::regclass, a.nextval, false)
+FROM
+(
+SELECT max(pipo_pk) + 1 AS nextval
+FROM pista_pouso_p
+) AS a;
+
+-- TABELA pista_pouso_l
+SELECT setval(('pipl_pk_seq'::text)::regclass, a.nextval, false)
+FROM
+(
+SELECT max(pipl_pk) + 1 AS nextval
+FROM pista_pouso_l
+) AS a;
+
+-- FINALIZAÇÃO
+DROP TABLE IF EXISTS tra_pista_pouso_l_tmp;
+
+DROP TABLE IF EXISTS tra_pista_pouso_p_tmp;
+
+-- VACUUM ANALYSE pista_pouso;
+-- VACUUM ANALYSE pista_pouso_p;
+-- VACUUM ANALYSE pista_pouso_l;
+
+--SELECT l.id_objeto AS id_linha, p.id_objeto AS id_ponto
+--FROM tra_pista_ponto_pouso_l l
+--JOIN tra_pista_ponto_pouso_p p ON l.id_objeto = p.id_objeto;
+
+--SELECT l.id_objeto AS id_linha, p.id_objeto AS id_ponto
+--FROM tra_pista_ponto_pouso_l l, tra_pista_ponto_pouso_p p
+--WHERE l.id_objeto = p.id_objeto; 
