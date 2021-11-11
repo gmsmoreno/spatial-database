@@ -1,0 +1,37 @@
+-- CRIAÇÃO DAS VIEWS 
+-- TABELAS DE PISTAS DE POUSO
+DROP VIEW IF EXISTS vw_pista_pouso;
+CREATE OR REPLACE VIEW vw_pista_pouso AS
+SELECT
+pip.pip_gid_pk as gid,
+pipo.pipo_pk as id,
+pipo.pipo_nm as nome,
+pip.pip_uso as uso_pista,
+pip.pip_lar as largura,
+pip.pip_ext as extensao,
+pip.pip_tip as tipo_pista,
+pip.pip_rev as revestimento,
+pip.pip_sit as situacao_pista,
+pip.pip_geo as geom_a,
+pipo.pipo_gm AS geom
+FROM pista_pouso pip
+INNER JOIN pista_pouso_p pipo ON pip.pip_id_objeto = pipo.pipo_pk
+UNION
+SELECT
+pip.pip_gid_pk as gid,
+pipl.pipl_pk as id,
+pipl.pipl_nm as nome,
+pip.pip_uso as uso_pista,
+pip.pip_lar as largura,
+pip.pip_ext as extensao,
+pip.pip_tip as tipo_pista,
+pip.pip_rev as revestimento,
+pip.pip_sit as situacao_oficial,
+pip.pip_geo as geom_a,
+pipl.pipl_gm AS geom
+FROM pista_pouso pip
+INNER JOIN pista_pouso_l pipl ON pip.pip_id_objeto = pipl.pipl_pk
+ORDER BY gid;
+
+SELECT * 
+FROM vw_pista_pouso;
