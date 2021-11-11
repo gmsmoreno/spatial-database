@@ -3,5 +3,8 @@
 
 -- BASTA CONCATENAR AGORA COM O psql E DEFINIR O HOST COMO localhost, O BANCO DE DADOS COMO nome_do_bd E O USUÁRIO UTILIZADO (NESSE CASO O postgres): 
 
+# Indigenous-land file (.shp)
 temp>shp2pgsql.exe -s 4674 tis_sirgas2000.shp Public.tis_sirgas2000 | psql -h localhost -d sbde -U postgres
+
+
 
