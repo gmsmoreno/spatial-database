@@ -1,2 +1,2 @@
-# spatial-database
+# spatial-db
  Spatial database applications (PostgreSQL/PostGIS)
