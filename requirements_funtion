@@ -1,0 +1,324 @@
+-- FUNÇÃO DE ANÁLISE DOS DADOS
+-- FUNÇÃO DE ANÁLISE DE DADOS NÃO GEOMÉTRICOS
+DROP FUNCTION IF EXISTS public.fn_estatistica(varchar);
+
+CREATE OR REPLACE FUNCTION public.fn_estatistica(tabela character varying)
+	RETURNS TABLE(coluna character varying, tipo_de_dado character varying, 
+				  num_registros_nulos character varying, num_registros_unicos character varying,
+				 num_max_algarismo character varying, min_registro character varying, max_registro character varying,
+				 max_frequencia_registros_unicos character varying)
+	LANGUAGE plpgsql
+	AS $function$
+	
+	DECLARE
+		query varchar;
+		cur_columns refcursor;
+		atributo varchar;
+		num_registros varchar;
+		tipo_de_dado varchar;
+		num_registros_nulos varchar;
+		num_registros_unicos varchar;
+		num_max_algarismo varchar;
+		min_registro varchar;
+		max_registro varchar;
+		max_frequencia_registros_unicos varchar;
+	
+	BEGIN
+		query := 'SELECT column_name FROM information_schema.columns 
+		WHERE table_schema = ''public'' and table_name = $1';
+		OPEN cur_columns FOR EXECUTE query USING tabela;
+		
+		DROP TABLE IF EXISTS result_set;
+		CREATE TEMPORARY TABLE result_set
+		(
+		coluna varchar,
+		tipo_de_dado varchar,
+		num_registros_nulos varchar,
+		num_registros_unicos varchar,
+		num_max_algarismo varchar,
+		min_registro varchar,
+		max_registro varchar,
+		max_frequencia_registros_unicos varchar
+		) ON COMMIT DELETE ROWS;
+		
+		fetch next from cur_columns into atributo;
+		while found
+		loop
+		
+		if atributo <> 'id' AND atributo <> 'geom' then
+		BEGIN
+			EXECUTE 
+			'SELECT data_type::varchar
+			FROM information_schema.columns
+			WHERE table_name = $$'||tabela||'$$ and
+			column_name = $$'||atributo||'$$;'
+			INTO tipo_de_dado;
+		END;
+		
+			BEGIN
+				EXECUTE
+				'SELECT num_registros_nulos::varchar
+				FROM
+				(
+				SELECT count(*) AS num_registros_nulos
+				FROM '||tabela||'
+				WHERE '||atributo||' is null
+				) AS a;'
+				INTO num_registros_nulos;
+			END;
+			
+			BEGIN
+				EXECUTE
+				'SELECT num_registros_unicos::varchar
+				FROM
+				(
+				SELECT count('||atributo||') AS num_registros_unicos
+				FROM
+				(
+				SELECT DISTINCT '||atributo||'
+				FROM '||tabela||'
+				) AS a
+				) AS a;'
+				INTO num_registros_unicos;
+			END;
+			
+			BEGIN
+				EXECUTE
+				'SELECT num_max_algarismo::varchar
+				FROM
+				(
+				SELECT max(var1) AS num_max_algarismo
+				FROM
+				(
+				SELECT char_length('||atributo||'::varchar) AS var1
+				FROM '||tabela||'
+				) AS a
+				) AS a;'
+				INTO num_max_algarismo;
+			END;
+			
+			BEGIN
+				EXECUTE
+				'SELECT min_registro::varchar
+				FROM
+				(
+				SELECT min('||atributo||') AS min_registro
+				FROM '||tabela||'
+				) AS a;'
+				INTO min_registro;
+			END;
+			
+			BEGIN
+				EXECUTE
+				'SELECT max_registro::varchar
+				FROM
+				(
+				SELECT max('||atributo||') AS max_registro
+				FROM '||tabela||'
+				) AS a;'
+				INTO max_registro;
+			END;
+			
+			BEGIN
+				EXECUTE
+				'SELECT max_frequencia_registros_unicos::varchar
+				FROM
+				(
+				SELECT count('||atributo||') AS max_frequencia_registros_unicos
+				FROM '||tabela||'
+				GROUP BY '||atributo||'
+				ORDER BY count('||atributo||') DESC
+				LIMIT 1
+				) AS a;'
+				INTO max_frequencia_registros_unicos;
+			END;
+			
+		INSERT INTO result_set
+		VALUES(atributo,
+			  tipo_de_dado,
+			  num_registros_nulos,
+			  num_registros_unicos,
+			  num_max_algarismo,
+			  min_registro,
+			  max_registro,
+			  max_frequencia_registros_unicos);
+		
+		END if;
+			fetch next from cur_columns into atributo;
+		end loop;
+		
+	close cur_columns;
+	RETURN QUERY
+	SELECT * FROM result_set;
+	END;
+	$function$
+			  
+			  
+-- OS SELECTS SEGUINTES FUNCIONAM!
+SELECT * FROM fn_estatistica('tra_pista_ponto_pouso_l');
+SELECT * FROM fn_estatistica('tra_pista_ponto_pouso_p');
+
+SELECT
+coluna,
+tipo_de_dado,
+num_registros_nulos,
+num_registros_unicos,
+num_max_algarismo,
+min_registro,
+max_registro,
+max_frequencia_registros_unicos 
+FROM fn_estatistica('tra_pista_ponto_pouso_l')
+
+-- CRIAR AS TABELAS DE ESTATÍSTICAS
+DROP TABLE IF EXISTS est_pista_pouso_l;
+CREATE TABLE est_pista_pouso_l AS
+SELECT * FROM fn_estatistica('tra_pista_ponto_pouso_l');
+
+DROP TABLE IF EXISTS est_pista_pouso_p;
+CREATE TABLE est_pista_pouso_p AS
+SELECT * FROM fn_estatistica('tra_pista_ponto_pouso_p');	
+		
+-- FUNÇÃO DE ANÁLISE DE DADOS GEOMÉTRICOS
+DROP FUNCTION IF EXISTS fn_estatistica_geometria;
+CREATE OR REPLACE FUNCTION
+public.fn_estatistica_geometria(atributo character varying, tabela character varying)
+	RETURNS TABLE (tipo_geometria character varying, espaco_dimensional character varying, dimensao_objeto character varying, srid integer, 
+				   num_registros_geom_multipla bigint, num_registros_geom_nao_simples bigint, num_registros_geom_nao_valida bigint)
+				   LANGUAGE plpgsql
+	AS $function$
+	
+	DECLARE
+	tipo_geometria varchar;
+	espaco_dimensional integer;
+	dimensao_objeto integer;
+	srid integer;
+	num_registros_geom_multipla bigint;
+	num_registros_geom_nao_simples bigint;
+	num_registros_geom_nao_valida bigint;
+	
+	BEGIN
+		DROP TABLE IF EXISTS result_set;
+		CREATE TEMPORARY TABLE result_set
+		(
+			tipo_geometria varchar,
+			espaco_dimensional varchar,
+			dimensao_objeto varchar,
+			srid integer,
+			num_registros_geom_multipla bigint,
+			num_registros_geom_nao_simples bigint,
+			num_registros_geom_nao_valida bigint
+		) ON COMMIT DELETE ROWS;
+		
+		-- TIPO DE GEOMETRIA
+		
+		BEGIN
+			EXECUTE
+			'SELECT DISTINCT GeometryType('||atributo||')
+			FROM '||tabela||';'
+			INTO tipo_geometria;
+		END;
+		
+		-- ESPAÇO DIMENSIONAL ONDE O OBJETO ESTÁ CONTIDO
+		
+		BEGIN
+			EXECUTE
+			'SELECT DISTINCT ST_NDims('||atributo||')
+			FROM '||tabela||';'
+			INTO espaco_dimensional;
+		END;
+		
+		-- DIMENSÃO DO OBJETO
+		
+		BEGIN
+			EXECUTE
+			'SELECT DISTINCT ST_Dimension('||atributo||')
+			FROM '||tabela||';'
+			INTO dimensao_objeto;
+		END;
+		
+		-- SRID DO OBJETO
+		
+		BEGIN
+			EXECUTE
+			'SELECT DISTINCT ST_SRID('||atributo||')
+			FROM '||tabela||';'
+			INTO SRID;
+		END;
+		
+		-- NÚMERO DE REGISTROS COM GEOMETRIA MÚLTIPLA
+		
+		BEGIN
+			EXECUTE
+			'SELECT count(*)
+			FROM '||tabela||'
+			WHERE ST_NumGeometries('||atributo||') > 1;'
+			INTO num_registros_geom_multipla;
+		END;
+		
+		-- NÚMERO DE REGISTROS COM GEOMETRIA NÃO SIMPLES
+		
+		BEGIN
+			EXECUTE
+			'SELECT count(*)
+			FROM '||tabela||'
+			WHERE ST_IsSimple('||atributo||') = false;'
+			INTO num_registros_geom_nao_simples;
+		END;
+		
+		-- NÚMERO DE REGISTROS COM GEOMETRIA NÃO VÁLIDA
+		
+		BEGIN
+			EXECUTE
+			'SELECT count(*)
+			FROM '||tabela||'
+			WHERE ST_IsValid('||atributo||') = false;'
+			INTO num_registros_geom_nao_valida;
+		END;
+		
+		
+	INSERT INTO result_set 
+	VALUES(
+		  tipo_geometria,
+		  espaco_dimensional,
+		  dimensao_objeto,
+		  SRID,
+		  num_registros_geom_multipla,
+		  num_registros_geom_nao_simples,
+		  num_registros_geom_nao_valida
+		  );
+	
+	
+	RETURN QUERY
+	SELECT * FROM result_set;
+	END;
+	$function$
+	
+
+-- CONFERINDO AS ESTATÍSTICAS DE GEOMETRIA NAS TABELAS
+
+SELECT * FROM fn_estatistica_geometria('geom', 'tra_pista_ponto_pouso_l');
+SELECT * FROM fn_estatistica_geometria('geom', 'tra_pista_ponto_pouso_p');
+			
+SELECT
+tipo_geometria,
+espaco_dimensional,
+dimensao_objeto,
+srid,
+num_registros_geom_multipla,
+num_registros_geom_nao_simples,
+num_registros_geom_nao_valida
+FROM fn_estatistica_geometria('geom','tra_pista_ponto_pouso_l');
+			
+-- GERANDO AS TABELAS DE ESTATÍSTICA DAS GEOMETRIAS
+
+DROP TABLE IF EXISTS GeomEst_pista_pouso_l;
+CREATE TABLE GeomEst_pista_pouso_l AS
+	SELECT * FROM fn_estatistica_geometria('geom', 'tra_pista_ponto_pouso_l');	
+
+DROP TABLE IF EXISTS GeomEst_pista_pouso_p;
+CREATE TABLE GeomEst_pista_pouso_p AS
+	SELECT * FROM fn_estatistica_geometria('geom', 'tra_pista_ponto_pouso_p');			
+	
+
+
+
