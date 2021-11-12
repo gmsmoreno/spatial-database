@@ -16,7 +16,7 @@
 ![image info](https://github.com/gmsmoreno/spatial-database/blob/main/logicalScheme.JPG)
 
 ## View of All Tables
-![image info](https://github.com/gmsmoreno/spatial-database/blob/main/viewPgAgmin.JPG)
+![image info](https://github.com/gmsmoreno/spatial-database/blob/main/viewPgAdmin.JPG)
 
 ##  View of MultiPoint Table
 ![image info](https://github.com/gmsmoreno/spatial-database/blob/main/view-pista-ponto.JPG)
